@@ -28,6 +28,7 @@ Note that you will need to adjust the organization of file locations and paths t
 
 * [Read filtering](#read-filtering)
 * [Read mapping](#read-mapping)
+* [Quantifying mapping results](#quantifying-mapping-results)
 * [Variant calling](#variant-calling)
 * [Variant filtering](#variant-filtering)
 * [Pixy analysis](#pixy-analysis)
@@ -101,3 +102,71 @@ done
 ```
 
 `sh bwa_mem.sh .processing_files/sample.list`
+
+### Quantifying mapping results
+
+#### Generated samtools index for reference genome
+
+`samtools faidx Hirundo_rustica_Chelidonia.fasta`
+
+#### Indexed mapping files
+
+`for i in ./bam/*.bam; do samtools index -@ 8 $i; done`
+
+#### Output mapping statistics using `samtools`
+
+```
+cd ./bam
+mkdir stats
+```
+
+The script below will calculate mapping statistics per bam file.
+
+samtools_stat.sh:
+
+```
+for i in *.bam; do
+	echo calculating mapping statistics for $i
+	samtools stat -@ 8 $i > ./stats/$i.stat.txt
+done
+```
+
+`sh samtools_stat.sh`
+
+#### Calculated rough coverage estimate (assuming a 1.21 Gb genome size):
+
+```
+cd ./stats
+
+for i in *.stat.txt; do echo $i; grep 'bases mapped:' $i | awk '{print $4/121000000}'; done
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
