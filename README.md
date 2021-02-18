@@ -1,8 +1,6 @@
 # Analysis of Z-linked genomic variation in barn swallows
 
-Below are details about the data processing and analysis steps in our analysis of genetic diversity and differentiation across the genomes of barn swallow populations, focusing on comparisons between the Z chromosome and autosomes to understand the mechanisms governing sex-linked variation and the role of the Z chromosome in speciation. 
-
-This workflow is a companion to the description in Schield et al. (in review).
+Below are details about the data processing and analysis steps in our analysis of genetic diversity and differentiation across the genomes of barn swallow populations, focusing on comparisons between the Z chromosome and autosomes to understand the mechanisms governing sex-linked variation and the role of the Z chromosome in speciation. This workflow is a companion to the description in Schield et al. (in review).
 
 The steps described here rely on the following software:
 
@@ -41,6 +39,8 @@ Note that you will need to adjust the organization of file locations and paths t
 * [Analysis in R](#analysis-in-r)
 
 ### Read filtering
+
+Raw whole-genome resequencing read data are available at the NCBI [SRA](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA323498/)
 
 Illumina libraries were sequenced on two lanes, so we will concatenate raw read files and quality filter the concatenated input.
 
