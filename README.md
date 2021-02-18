@@ -170,6 +170,9 @@ for i in `cat $list`; do
 done
 ```
 
+`sh GATK_HaplotypeCaller.sh ./processing_files/sample.list`
+
+__Note: GATK HaplotypeCaller will take a small eternity to run on all of these samples one-by-one. Consider breaking up the job into smaller lists of samples and running jobs in parallel.__
 
 
 
