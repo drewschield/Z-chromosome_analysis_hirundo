@@ -81,4 +81,4 @@ done
 
 ### Read mapping
 
-We will map filtered read data to the [Hirundo rustica (Chelidonia) reference genome](ftp://parrot.genomics.cn/gigadb/pub/10.5524/100001_101000/100531/Final_assembly/Barn_swallow_genome_assembly.fasta) using `bwa`.
+We will map filtered read data to the [Hirundo rustica (Chelidonia) reference genome](http://gigadb.org/dataset/view/id/100531) using `bwa`.
