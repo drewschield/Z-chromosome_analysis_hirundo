@@ -107,7 +107,7 @@ for line in `cat sample.list`; do
 done
 ```
 
-`sh bwa_mem.sh .processing_files/sample.list`
+`sh bwa_mem.sh ./processing_files/sample.list`
 
 #### Run `bwa` on outgroup *Hirundo smithii* sample
 
@@ -241,7 +241,9 @@ tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz
 
 Use `vcftools` to calculate mean depth per site:
 
-`vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz --site-mean-depth --out hirundo_rustica+smithii.allsites.HardFilter.recode`
+```
+vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz --site-mean-depth --out hirundo_rustica+smithii.allsites.HardFilter.recode
+```
 
 Note: there is likely a faster `bcftools` solution to this, using the `query` subcommand to output information from the FORMAT field.
 
@@ -249,7 +251,7 @@ Based on these data, the mean depth = 4, 2.5th depth quantile = 0, and 97.5th de
 
 We'll recode sites with mean depth above 9.5 as missing data and remove sites on unassigned scaffolds using `bcftools`.
 
-This command will output sites on scaffolds listed in `./processing_files/Hirundo_rustica_Barn2Flycatcher_ChromAssigned.bed` and recode sites with extremely high mean read depth:
+This command will output sites on scaffolds listed in `processing_files/Hirundo_rustica_Barn2Flycatcher_ChromAssigned.bed` and recode sites with extremely high mean read depth:
 
 ```
 bcftools view --threads 16 -R Hirundo_rustica_Barn2Flycatcher_ChromAssigned.bed hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz | bcftools filter --threads 16 -e 'MEAN(FORMAT/DP)>9.5' --set-GTs . -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.vcf.gz
@@ -259,6 +261,76 @@ tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.vcf.
 #### Identify and remove __female heterozygous sites__ on the Z chromosome
 
 Female barn swallows are hemizygous and cannot have heterozygous genotypes on the Z chromosome. Heterozygous variant calls on the Z chromosome in females are therefore spurious and should be removed prior to analysis. We'll conservatively recode any sites with heterozygous genotypes in females as missing data for all individuals.
+
+Extract biallelic SNPs on the Z chromosome to query variants for female heterozygous sites:
+
+```
+bcftools view --threads 16 -m2 -M2 -U -v snps -r QRBI01000206.1,QRBI01000143.1,QRBI01000102.1,QRBI01000186.1,QRBI01000173.1,QRBI01000125.1,QRBI01000103.1,QRBI01000275.1,QRBI01000095.1,QRBI01000244.1,QRBI01000092.1,QRBI01000140.1,QRBI01000225.1,QRBI01000195.1,QRBI01000141.1,QRBI01000097.1,QRBI01000234.1,QRBI01000139.1,QRBI01000052.1 -O v -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.snps.chrZ.vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.vcf.gz
+```
+
+The Python script `identify_female_Zhet_sites.py` will identify sites in the Z-linked VCF with any heterozygous calls in females, based on samples in `processing_files/sample.female.list`:
+
+```
+python identify_female_Zhet_sites.py ./processing_files/sample.female.list hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.snps.chrZ.vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.snps.chrZ.female_Zhet_sites.txt
+```
+
+Format BED file for masking sites:
+
+```
+awk 'BEGIN{OFS="\t"}{print $1,$2-1,$2}' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.snps.chrZ.female_Zhet_sites.txt > annot.female_Zhet.bed
+```
+
+Index BED feature file using GATK `IndexFeatureFile`:
+
+`../gatk-4.0.8.1/gatk IndexFeatureFile --feature-file annot.female_Zhet.bed`
+
+Mask sites with `VariantFiltration`:
+
+```
+../gatk-4.0.8.1/gatk VariantFiltration -V hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.vcf.gz --mask annot.female_Zhet.bed --mask-name ZHET -O hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.female_Zhet.vcf.gz
+```
+
+Recode sites as missing genotypes using `bcftools`:
+
+```
+bcftools filter --threads 16 -e 'FILTER="ZHET"' --set-GTs . -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.vcf.gz hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.female_Zhet.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.vcf.gz
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
