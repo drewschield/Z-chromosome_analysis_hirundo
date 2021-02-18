@@ -232,10 +232,29 @@ We will impose these __hard filters__ to remove low-quality variants:
 
 #### Recode indels, repeats, and sites failing quality filters as missing genotypes using `bcftools`
 
-`bcftools filter --threads 20 -e 'TYPE="indel" || FILTER="REP" || FILTER="QD2" || FILTER="FS60" || FILTER="MQ40" || FILTER="MQRankSum-12.5" || FILTER="ReadPosRankSum-8"' --set-GTs . -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz hirundo_rustica+smithii.allsites.HardFilter.vcf.gz`
+```
+bcftools filter --threads 20 -e 'TYPE="indel" || FILTER="REP" || FILTER="QD2" || FILTER="FS60" || FILTER="MQ40" || FILTER="MQRankSum-12.5" || FILTER="ReadPosRankSum-8"' --set-GTs . -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz hirundo_rustica+smithii.allsites.HardFilter.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz
+```
 
-#### Remove sites with extreme read depths and on unassigned scaffolds
+#### Filter sites with extreme read depths and on unassigned scaffolds
 
+Use `vcftools` to calculate mean depth per site:
+
+`vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz --site-mean-depth --out hirundo_rustica+smithii.allsites.HardFilter.recode`
+
+Note: there is likely a faster `bcftools` solution to this, using the `query` subcommand to output information from the FORMAT field.
+
+Based on these data, the mean depth = 4, 2.5th depth quantile = 0, and 97.5th depth quantile = 9.54. We'll want to recode sites with super high read depths as missing genotypes to avoid effects of potential paralogous mappings.
+
+We'll recode sites with mean depth above 9.5 as missing data and remove sites on unassigned scaffolds using `bcftools`.
+
+This command will output sites on scaffolds listed in `./processing_files/Hirundo_rustica_Barn2Flycatcher_ChromAssigned.bed` and recode sites with extremely high mean read depth:
+
+```
+bcftools view --threads 16 -R Hirundo_rustica_Barn2Flycatcher_ChromAssigned.bed hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz | bcftools filter --threads 16 -e 'MEAN(FORMAT/DP)>9.5' --set-GTs . -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.vcf.gz
+```
 
 #### Identify and remove __female heterozygous sites__ on the Z chromosome
 
