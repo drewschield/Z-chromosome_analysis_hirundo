@@ -136,9 +136,7 @@ done
 #### Calculated rough coverage estimate (assuming a 1.21 Gb genome size):
 
 ```
-cd ./stats
-
-for i in *.stat.txt; do echo $i; grep 'bases mapped:' $i | awk '{print $4/121000000}'; done
+for i in ./stats/*.stat.txt; do echo $i; grep 'bases mapped:' $i | awk '{print $4/121000000}'; done
 ```
 
 
