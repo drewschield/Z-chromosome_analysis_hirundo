@@ -41,7 +41,7 @@ Note that you will need to adjust the organization of file locations and paths t
 
 ### Read filtering
 
-Raw whole-genome resequencing read data are available at the NCBI [SRA](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA323498/).
+__*Raw whole-genome resequencing read data are available at the NCBI [SRA](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA323498/).*__
 
 Illumina libraries were sequenced on two lanes, so we will concatenate raw read files and quality filter the concatenated input.
 
