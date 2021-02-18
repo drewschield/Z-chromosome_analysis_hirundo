@@ -198,8 +198,14 @@ bgzip ./gvcf/RS_5.raw.snps.indels.g.vcf
 tabix -p vcf ./gvcf/RS_5.raw.snps.indels.g.vcf.gz
 ```
 
+#### Call variants among cohort of samples using `GenotypeGVCFs`
 
+This will call an 'all-sites' VCF among individuals in `processing_files/sample+smithii.gvcf.list`
 
+```
+cd vcf
+../gatk-3.8-1-0/GenomeAnalysisTK.jar -T GenotypeGVCFs -R ../Hirundo_rustica_Chelidonia.fasta -V sample+smithii.gvcf.list -allSites -o hirundo_rustica+smithii.allsites.raw.vcf.gz
+```
 
 
 
