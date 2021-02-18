@@ -190,8 +190,15 @@ done
 
 *Note: GATK HaplotypeCaller will take a small eternity to run on all of these samples one-by-one. Consider breaking up the job into smaller lists of samples and running jobs in parallel.*
 
+#### Run `HaplotypeCaller` on outgroup *Hirundo smithii* sample
 
+```
+./gatk-4.0.8.1/gatk HaplotypeCaller -R Hirundo_rustica_Chelidonia.fasta --ERC GVCF -I ./bam/RS_5.bam -O ./gvcf/RS_5.raw.snps.indels.g.vcf
 
+bgzip ./gvcf/RS_5.raw.snps.indels.g.vcf
+
+tabix -p vcf ./gvcf/RS_5.raw.snps.indels.g.vcf.gz
+```
 
 
 
