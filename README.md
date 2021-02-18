@@ -2,7 +2,7 @@
 
 Below are details about the data processing and analysis steps in our analysis of genetic diversity and differentiation across the genomes of barn swallow populations, focusing on comparisons between the Z chromosome and autosomes to understand the mechanisms governing sex-linked variation and the role of the Z chromosome in speciation. This workflow is a companion to the description in Schield et al. (in review).
 
-The steps described here rely on the following software:
+The steps below depend on the following software and assume that dependencies are on the user path:
 
 * conda
 * trimmomatic
@@ -82,3 +82,22 @@ done
 ### Read mapping
 
 We will map filtered read data to the [Hirundo rustica (Chelidonia) reference genome](http://gigadb.org/dataset/view/id/100531) using `bwa`.
+
+#### Set up environment, map reads with `bwa`, sort with `samtools`
+
+`mkdir bam`
+
+The script below will map filtered reads for samples in `processing_files/sample.list` and also rename the output with helpful 'HR' prefixes.
+
+bwa_mem.sh:
+
+```
+for line in `cat sample.list`; do
+	name=$line
+	out=`echo $name | sed 's/L_/HR/'`
+	echo "Mapping filtered $out data to reference"
+	bwa mem -t 16 -R "@RG\tID:$out\tLB:Hirundo\tPL:illumina\tPU:NovaSeq6000\tSM:$out" Hirundo_rustica_Chelidonia.fasta ./fastq_filtered/${name}_1_P.trim.fq.gz ./fastq_filtered/${name}_2_P.trim.fq.gz | samtools sort -@ 16 -O bam -T temp -o ./bam/$out.bam -
+done
+```
+
+`sh bwa_mem.sh .processing_files/sample.list`
