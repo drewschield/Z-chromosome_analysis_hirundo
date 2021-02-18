@@ -194,9 +194,7 @@ done
 
 ```
 ./gatk-4.0.8.1/gatk HaplotypeCaller -R Hirundo_rustica_Chelidonia.fasta --ERC GVCF -I ./bam/RS_5.bam -O ./gvcf/RS_5.raw.snps.indels.g.vcf
-
 bgzip ./gvcf/RS_5.raw.snps.indels.g.vcf
-
 tabix -p vcf ./gvcf/RS_5.raw.snps.indels.g.vcf.gz
 ```
 
