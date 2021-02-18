@@ -1,6 +1,8 @@
-# Pipeline for analysis of Z-linked and autosomal genomic variation in barn swallows
+# Analysis of Z-linked and autosomal genomic variation in barn swallows
 
 Below are details about the data processing and analysis steps in our analysis of genetic diversity and differentiation across the genomes of barn swallow populations, focusing on comparisons between the Z chromosome and autosomes to understand the mechanisms governing sex-linked variation and the role of the Z chromosome in speciation. 
+
+This workflow is a companion to the description in Schield et al. (in review).
 
 The steps described here rely on the following software:
 
@@ -22,11 +24,10 @@ Shell and Python scripts are in the `scripts` directory.
 Population genetic summary statistics output from `pixy` are in the `pixy_results` directory.
 R scripts used in analyses are in the `R` directory.
 
-Note that you may need to adjust the organization of file locations to suite your environment.
+Note that you will need to adjust the organization of file locations and paths to suit your environment.
 
 ## Contents
 
-* [Read processing](#read-processing)
 * [Read filtering](#read-filtering)
 * [Read mapping](#read-mapping)
 * [Variant calling](#variant-calling)
@@ -38,3 +39,40 @@ Note that you may need to adjust the organization of file locations to suite you
 * [Topology weighting analysis](#topology-weighting-analysis)
 * [ABBA-BABA analysis](#abba-baba-analysis)
 * [Analysis in R](#analysis-in-r)
+
+### Read filtering
+
+Illumina libraries were sequenced on two lanes, so we will concatenate raw read files and quality filter the concatenated input.
+
+We will impose these filters to trim reads:
+
+* Remove 5' end bases if quality is below 20
+* Remove 3' end bases if quality is below 20
+* Minimum read length = 32
+* Remove reads if average quality is < 30
+
+#### Set up environment
+
+Get raw fastq data into `fastq` directory. <br /> Make a `fastq_filtered` directory for output.
+
+```
+mkdir fastq
+mkdir fastq_filtered
+```
+
+#### Concatenate raw data and filter reads with `trimmomatic`
+
+The script below will concatenate the data and run trimmomatic on the paired reads for samples in `processing_files/sample.orig.list`.
+
+cat_trimmomatic.sh:
+
+```
+for line in `cat sample.orig.list`; do
+	name=$line
+	echo processing and filtering ${name}.
+	cat /data1/hirundo_data_master/WGS/BarnSwallows/fastq/${name}_*_1.fq.gz > ./fastq/${name}_1.fq.gz
+	cat /data1/hirundo_data_master/WGS/BarnSwallows/fastq/${name}_*_2.fq.gz > ./fastq/${name}_2.fq.gz
+	trimmomatic PE -phred33 -threads 16 ./fastq/${name}_1.fq.gz ./fastq/${name}_2.fq.gz ./fastq_filtered/${name}_1_P.trim.fq.gz ./fastq_filtered/${name}_1_U.trim.fq.gz ./fastq_filtered/${name}_2_P.trim.fq.gz ./fastq_filtered/${name}_2_U.trim.fq.gz LEADING:20 TRAILING:20 MINLEN:32 AVGQUAL:30
+	rm ./fastq/${name}_*.fq.gz
+done
+```
