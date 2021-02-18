@@ -76,3 +76,9 @@ for line in `cat sample.orig.list`; do
 	rm ./fastq/${name}_*.fq.gz
 done
 ```
+
+`sh cat_trimmomatic.sh`
+
+### Read mapping
+
+We will map filtered read data to the [Hirundo rustica (Chelidonia) reference genome](ftp://parrot.genomics.cn/gigadb/pub/10.5524/100001_101000/100531/Final_assembly/Barn_swallow_genome_assembly.fasta) using `bwa`.
