@@ -80,6 +80,10 @@ done
 
 `sh cat_trimmomatic.sh`
 
+#### Run `trimmomatic` on outgroup *Hirundo smithii* sample
+
+`trimmomatic PE -phred33 -threads 16 ./fastq/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_1.fq.gz ./fastq/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_2.fq.gz ./fastq_filtered/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_1_P.trim.fq.gz ./fastq_filtered/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_1_U.trim.fq.gz ./fastq_filtered/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_2_P.trim.fq.gz ./fastq_filtered/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_2_U.trim.fq.gz LEADING:20 TRAILING:20 MINLEN:32 AVGQUAL:30`
+
 ### Read mapping
 
 We will map filtered read data to the [Hirundo rustica (Chelidonia) reference genome](http://gigadb.org/dataset/view/id/100531) using `bwa`.
@@ -103,6 +107,10 @@ done
 
 `sh bwa_mem.sh .processing_files/sample.list`
 
+#### Run `bwa` on outgroup *Hirundo smithii* sample
+
+`bwa mem -t 16 -R "@RG\tID:RS_5\tLB:Hirundo\tPL:illumina\tPU:NovaSeq6000\tSM:RS_5" Hirundo_rustica_Chelidonia.fasta ./fastq_filtered/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_1_P.trim.fq.gz ./fastq_filtered/RS_5_USPD16098865-AK1579-AK402_HL7CWDSXX_L1_2_P.trim.fq.gz | samtools sort -@ 16 -O bam -T temp -o ./bam/RS_5.bam -`
+
 ### Quantify mapping results
 
 #### Generate samtools index for reference genome
@@ -112,6 +120,10 @@ done
 #### Index mapping files
 
 `for i in ./bam/*.bam; do samtools index -@ 8 $i; done`
+
+#### Index outgroup *Hirundo smithii* sample
+
+`samtools index -@ 8 ./bam/RS_5.bam`
 
 #### Output mapping statistics using `samtools`
 
@@ -143,7 +155,7 @@ for i in ./stats/*.stat.txt; do echo $i; grep 'bases mapped:' $i | awk '{print $
 
 We will use `GATK` for variant discovery.
 
-These steps use local installations of GATK 3.8.1.0 and 4.0.8.1
+These steps use local installations of GATK 3.8-1-0 and 4.0.8.1
 
 #### Set up environment
 
