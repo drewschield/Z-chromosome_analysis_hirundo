@@ -210,11 +210,11 @@ cd vcf
 ### Variant filtering
 
 Variant filtration will proceed with a few general steps:
-* 1. Impose hard quality filters
-* 2. Remove indels and repeats
-* 3. Remove sites with extreme read depths and on scaffolds not assigned to chromosomes
-* 4. Remove female heterozygous sites on the Z chromosome
-* 5. Set additional filters for specific analyses
+1. Impose hard quality filters
+2. Remove indels and repeats
+3. Remove sites with extreme read depths and on scaffolds not assigned to chromosomes
+4. Remove female heterozygous sites on the Z chromosome
+5. Set additional filters for specific analyses
 
 #### Annotate variants not passing quality filters using `VariantFiltration`
 
