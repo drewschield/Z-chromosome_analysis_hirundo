@@ -258,7 +258,7 @@ bcftools view --threads 16 -R Hirundo_rustica_Barn2Flycatcher_ChromAssigned.bed 
 tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.vcf.gz
 ```
 
-#### Identify and remove __female heterozygous sites__ on the Z chromosome
+#### Identify and remove *female heterozygous sites* on the Z chromosome
 
 Female barn swallows are hemizygous and cannot have heterozygous genotypes on the Z chromosome. Heterozygous variant calls on the Z chromosome in females are therefore spurious and should be removed prior to analysis. We'll conservatively recode any sites with heterozygous genotypes in females as missing data for all individuals.
 
