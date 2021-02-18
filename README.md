@@ -103,13 +103,13 @@ done
 
 `sh bwa_mem.sh .processing_files/sample.list`
 
-### Quantifying mapping results
+### Quantify mapping results
 
-#### Generated samtools index for reference genome
+#### Generate samtools index for reference genome
 
 `samtools faidx Hirundo_rustica_Chelidonia.fasta`
 
-#### Indexed mapping files
+#### Index mapping files
 
 `for i in ./bam/*.bam; do samtools index -@ 8 $i; done`
 
@@ -133,19 +133,42 @@ done
 
 `sh samtools_stat.sh`
 
-#### Calculated rough coverage estimate (assuming a 1.21 Gb genome size):
+#### Calculate rough coverage estimate (assuming a 1.21 Gb genome size)
 
 ```
 for i in ./stats/*.stat.txt; do echo $i; grep 'bases mapped:' $i | awk '{print $4/121000000}'; done
 ```
 
+### Variant calling
 
+We will use `GATK` for variant discovery.
 
+These steps use local installations of GATK 3.8.1.0 and 4.0.8.1
 
+#### Set up environment
 
+```
+mkdir gvcf
+mkdir vcf
+```
 
+#### Generate sequence dictionary 
 
+`./gatk-4.0.8.1/gatk CreateSequenceDictionary -R Hirundo_rustica_Chelidonia.fasta`
 
+#### Call individual variants / generate genomic VCF per sample using `HaplotypeCaller`
+
+The script below will call `HaplotypeCaller` on bam files for samples in `processing_files/sample.list`.
+
+GATK_HaplotypeCaller.sh:
+
+```
+list=$1
+for i in `cat $list`; do
+	./gatk-4.0.8.1/gatk HaplotypeCaller -R Hirundo_rustica_Chelidonia.fasta --ERC GVCF -I ./bam/$i.bam -O ./gvcf/$i.raw.snps.indels.g.vcf
+	bgzip ./gvcf/$i.raw.snps.indels.g.vcf
+done
+```
 
 
 
