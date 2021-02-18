@@ -207,6 +207,39 @@ cd vcf
 ../gatk-3.8-1-0/GenomeAnalysisTK.jar -T GenotypeGVCFs -R ../Hirundo_rustica_Chelidonia.fasta -V sample+smithii.gvcf.list -allSites -o hirundo_rustica+smithii.allsites.raw.vcf.gz
 ```
 
+### Variant filtering
+
+Variant filtration will proceed with a few general steps:
+* 1. Impose hard quality filters
+* 2. Remove indels and repeats
+* 3. Remove sites with extreme read depths and on scaffolds not assigned to chromosomes
+* 4. Remove female heterozygous sites on the Z chromosome
+* 5. Set additional filters for specific analyses
+
+#### Annotate variants not passing quality filters using `VariantFiltration`
+
+We will impose these __hard filters__ to remove low-quality variants:
+
+* QD < 2.0
+* FS > 60.0
+* MQ < 40.0
+* MQRankSum < -12.5
+* ReadPosRankSum < -8.0
+
+```
+../gatk-4.0.8.1/gatk VariantFiltration -V hirundo_rustica+smithii.allsites.raw.vcf.gz -filter "QD < 2.0" --filter-name "QD2" -filter "FS > 60.0" --filter-name "FS60" -filter "MQ < 40.0" --filter-name "MQ40" -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" --mask ../genome_annotation/GCA_003692655.1_Chelidonia_genomic.repeat.sort.bed --mask-name REP -O hirundo_rustica+smithii.allsites.HardFilter.vcf.gz
+```
+
+#### Recode indels, repeats, and sites failing quality filters as missing genotypes using `bcftools`
+
+`bcftools filter --threads 20 -e 'TYPE="indel" || FILTER="REP" || FILTER="QD2" || FILTER="FS60" || FILTER="MQ40" || FILTER="MQRankSum-12.5" || FILTER="ReadPosRankSum-8"' --set-GTs . -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.vcf.gz hirundo_rustica+smithii.allsites.HardFilter.vcf.gz`
+
+#### Remove sites with extreme read depths and on unassigned scaffolds
+
+
+#### Identify and remove __female heterozygous sites__ on the Z chromosome
+
+Female barn swallows are hemizygous for the Z chromosome, and cannot have heterozygous genotypes. Any heterozygous sites on the Z chromosome in females are therefore spurious and should be removed prior to analysis. We'll conservatively recode any sites with heterozygous genotypes in females as missing data for all individuals.
 
 
 
