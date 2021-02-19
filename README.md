@@ -572,7 +572,7 @@ done
 
 ### ADMIXTURE analysis
 
-We'll run ADMIXTURE for a series of *K* genetic clusters on Z-linked and autosomal SNPs.
+We'll run `ADMIXTURE` for a series of *K* genetic clusters on Z-linked and autosomal SNPs.
 
 #### Set up environment
 
@@ -593,9 +593,9 @@ plink --vcf ../../../vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.dept
 plink --vcf ../../../vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.vcf --make-bed --out hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto --allow-extra-chr --recode12
 ```
 
-#### Fix scaffold names in .map and .bim files so ADMIXTURE doesn't barf
+#### Fix scaffold names in .map and .bim files so `ADMIXTURE` doesn't barf
 
-ADMIXTURE wants scaffolds to be represented as integers, and will fail if bootstrapping is used on non-integer .map and .bim input.
+`ADMIXTURE` wants scaffolds to be represented as integers, and will fail if bootstrapping is used on non-integer .map and .bim input.
 
 ```
 sed -i.bak -e 's/QRBI010000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.bim 
@@ -617,7 +617,7 @@ sed -i.bak -e 's/\.1//g' hirundo_rustica+smithii.allsites.HardFilter.recode.dept
 
 #### Run ADMIXTURE
 
-The script below will run ADMIXTURE for a series of *K* values:
+The script below will run `ADMIXTURE` for a series of *K* values:
 
 run_admixture.sh:
 
