@@ -338,6 +338,13 @@ Thin SNPs with MAF >= 0.05 by 100 bp (and only keep ingroup samples based on `pr
 vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.vcf.gz --recode --stdout --keep ./processing_files/sample.ingroup.list --min-alleles 2 --max-alleles 2 --maf 0.05 --thin 100  | bgzip -c > hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.vcf.gz
 ```
 
+Bonus: extract autosomal and Z-linked SNPs:
+
+```
+bcftools view -R Hirundo_rustica_Barn2Flycatcher_ZAssigned.bed -O v -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.vcf.gz
+bcftools view -R Hirundo_rustica_Barn2Flycatcher_AutoAssigned.bed -O v -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.vcf.gz
+```
+
 ### Pixy analysis
 
 We'll use [pixy](https://pixy.readthedocs.io/en/latest/) to estimate nucleotide diversity (pi) for barn swallow populations.
@@ -516,10 +523,6 @@ After calculating *PBS*, the scripts below will order scans by chromosome.
 order_scans_pbs.py:
 
 ```
-"""
-python order_scans_pbs.py <scaffold.list> <input.pbs> <ordered.pbs>
-"""
-
 import sys
 
 out = open(sys.argv[3],'w')
@@ -549,7 +552,6 @@ for line in open(sys.argv[1],'r'):
 				end = m.split()[2]
 				pbs = m.split()[14]
 				out.write(str(chrom_name)+'\t'+str(scaff)+'\t'+str(start)+'\t'+str(end)+'\t'+str(pbs)+'\n')
-
 ```
 
 order_chrom_pbs.sh (wrapper to run `order_scans_pbs.py` per subspecies):
