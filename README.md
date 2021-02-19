@@ -297,17 +297,44 @@ bcftools filter --threads 16 -e 'FILTER="ZHET"' --set-GTs . -O z -o hirundo_rust
 tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.vcf.gz
 ```
 
+#### Set additional filters for various analyses
 
+Certain analyses we'll perform require further removal of sites not meeting specific criteria. Specifically, we'll produce VCFs where we retain:
 
+* SNPs present in >= 60% of samples
+	* Non-singleton SNPs
+	* SNPs with minor-allele frequency (MAF) >= 0.05
+	* SNPs with MAF >= 0.05 and no closer than 100 bp to the nearest SNP
 
+First, extract biallelic SNPs using `bcftools`:
 
+```
+bcftools view --threads 16 -m2 -M2 -U -v snps -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.vcf.gz hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.vcf.gz
+```
 
+Keep SNPs meeting missing data threshold (i.e., --max-missing 0.4) using `vcftools`:
 
+```
+vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.vcf.gz --recode --stdout --max-missing 0.4 | bgzip -c > hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.vcf.gz
+```
 
+Remove singletons:
 
+```
+vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.vcf.gz --recode --stdout --mac 2 | bgzip -c > hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+```
 
+Remove SNPs with MAF < 0.05:
 
+```
+vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.vcf.gz --recode --stdout --mac 2 --maf 0.05  | bgzip -c > hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.vcf.gz
+```
 
+Thin SNPs with MAF >= 0.05 by 100 bp (and only keep ingroup samples based on `processing_files/sample.ingroup.list`):
+
+```
+vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.vcf.gz --recode --stdout --keep ./processing_files/sample.ingroup.list --min-alleles 2 --max-alleles 2 --maf 0.05 --thin 100  | bgzip -c > hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.vcf.gz
+```
 
 
 
