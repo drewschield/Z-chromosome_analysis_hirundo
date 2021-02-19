@@ -477,6 +477,7 @@ We'll estimate relative population differentiation (*Fst*) using `vcftools`.
 ```
 cd ./analysis/popgen_stats
 mkdir fst
+mkdir pbs
 ```
 
 #### Estimate *Fst* in sliding windows
@@ -507,6 +508,67 @@ Results are `fst_results`.
 #### Calculate *PBS* from *Fst* results
 
 We'll calculate *PBS* in sliding windows in the `R` script `Fst_PBS.R` (see [Analysis in R](#analysis-in-r) section below).
+
+After calculating *PBS*, the scripts below will order scans by chromosome.
+
+`cd ../pbs`
+
+order_scans_pbs.py:
+
+```
+"""
+python order_scans_pbs.py <scaffold.list> <input.pbs> <ordered.pbs>
+"""
+
+import sys
+
+out = open(sys.argv[3],'w')
+out.write('CHROM'+'\t'+'SCAFF'+'\t'+'BIN_START'+'\t'+'BIN_END'+'\t'+'pbs'+'\n')
+
+chrom_name = sys.argv[1].split('list.')[1]
+chrom_name = chrom_name.split('.txt')[0]
+
+for line in open(sys.argv[1],'r'):
+	chrom = line.split()[0]
+	matches = []
+	order = []
+	with open(sys.argv[2],'r') as pbs:
+		next(pbs)
+		for p in pbs:
+			scaff = p.split()[0]
+			start = p.split()[1]
+			if str(scaff) == str(chrom):
+				matches.append(p)
+				order.append(int(start))
+	sort_order = sorted(order)
+	for o in sort_order:
+		for m in matches:
+			if int(m.split()[1]) == int(o):
+				scaff = m.split()[0]
+				start = m.split()[1]
+				end = m.split()[2]
+				pbs = m.split()[14]
+				out.write(str(chrom_name)+'\t'+str(scaff)+'\t'+str(start)+'\t'+str(end)+'\t'+str(pbs)+'\n')
+
+```
+
+order_chrom_pbs.sh (wrapper to run `order_scans_pbs.py` per subspecies):
+
+```
+for chrom in `cat ../chrom.list`; do
+	python order_scans_pbs.py ../hirundo_rustica_scaffold_list.$chrom.txt pbs.er.data.txt pbs.er.$chrom.txt
+	python order_scans_pbs.py ../hirundo_rustica_scaffold_list.$chrom.txt pbs.gu.data.txt pbs.gu.$chrom.txt
+	python order_scans_pbs.py ../hirundo_rustica_scaffold_list.$chrom.txt pbs.ru.data.txt pbs.ru.$chrom.txt
+	python order_scans_pbs.py ../hirundo_rustica_scaffold_list.$chrom.txt pbs.sa.data.txt pbs.sa.$chrom.txt
+	python order_scans_pbs.py ../hirundo_rustica_scaffold_list.$chrom.txt pbs.tr.data.txt pbs.tr.$chrom.txt
+	python order_scans_pbs.py ../hirundo_rustica_scaffold_list.$chrom.txt pbs.ty.data.txt pbs.ty.$chrom.txt
+done
+```
+
+`sh order_chrom_pbs.sh`
+
+
+### ADMIXTURE analysis
 
 
 
