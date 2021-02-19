@@ -14,8 +14,8 @@ The steps below depend on the following software and assume that dependencies ar
 * [Pixy](https://pixy.readthedocs.io/en/latest/)
 * ADMIXTURE
 * [Genomics general scripts](https://github.com/simonhmartin/genomics_general)
-* PhyML
-* TWISST
+* [PhyML](https://github.com/stephaneguindon/phyml)
+* [TWISST](https://github.com/simonhmartin/twisst)
 * R
 
 Lists and miscellaneous files are in the `processing_files` directory.
@@ -23,6 +23,7 @@ Shell and Python scripts are in the `scripts` directory.
 Population genetic summary statistics output from `pixy` are in the `pixy_results` directory.
 Tajima's *D* statistics are in the `tajimas_d_results` directory.
 Relative population differentiation statistics (*Fst* and *PBS*) are in the `fst_results` and `pbs_results` directories.
+Topology weighting results are in the `twisst_results` directory.
 R scripts used in analyses are in the `R` directory.
 
 Note that you will need to adjust the organization of file locations and paths to suit your environment.
@@ -570,6 +571,7 @@ done
 
 `sh order_chrom_pbs.sh`
 
+Results are in `pbs_results`.
 
 ### ADMIXTURE analysis
 
@@ -670,5 +672,100 @@ Deep triplets:
 1. *savignii*, *transitiva*, and *erythrogaster*
 2. *erythrogaster*, *tytleri*, and *savignii*
 
-Various sample lists and popmaps for topology weighting analyses are in `processing_files/twisst`.
+Various sample lists and popmaps for topology weighting analyses are in `processing_files/twisst/`.
+
+#### Set up environment
+
+```
+cd ./analysis
+mkdir topo_weighting
+cd topo_weighting
+mkdir analysis_ru-sa-tr
+mkdir analysis_er-gu-ty
+mkdir analysis_sa-tr-er
+mkdir analysis_er-ty-sa
+mkdir geno_input
+```
+
+Cloned local copies of the [TWISST](https://github.com/simonhmartin/twisst) and [Genomics General](https://github.com/simonhmartin/genomics_general) repos here.
+Also installed local distribution of [PhyML](https://github.com/stephaneguindon/phyml).
+
+#### Extract VCF files for triplet analyses
+
+```
+bcftools view --threads 8 -S sample.ru-sa-tr.list -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.ru-sa-tr.vcf.gz /data3/hirundo/vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.ru-sa-tr.vcf.gz
+
+bcftools view --threads 8 -S sample.er-gu-ty.list -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-ty.vcf.gz /data3/hirundo/vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-ty.vcf.gz
+
+bcftools view --threads 8 -S sample.sa-tr-er.list -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-tr-er.vcf.gz /data3/hirundo/vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-tr-er.vcf.gz
+
+bcftools view --threads 8 -S sample.er-ty-sa.list -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-ty-sa.vcf.gz /data3/hirundo/vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-ty-sa.vcf.gz
+```
+
+#### Convert VCF to geno input using `parseVCF.py`
+
+```
+python ./genomics_general/VCF_processing/parseVCF.py -i hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.ru-sa-tr.vcf.gz | bgzip > ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.ru-sa-tr.geno.gz
+python ./genomics_general/VCF_processing/parseVCF.py -i hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-ty.vcf.gz | bgzip > ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-ty.geno.gz
+python ./genomics_general/VCF_processing/parseVCF.py -i hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-tr-er.vcf.gz | bgzip > ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-tr-er.geno.gz
+python ./genomics_general/VCF_processing/parseVCF.py -i hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-ty-sa.vcf.gz | bgzip > ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-ty-sa.geno.gz
+```
+
+#### Estimate geneologies in sliding windows using `phyml_sliding_windows.py`
+
+The script calls `PhyML` on windows of a specified number of SNPS.
+
+```
+python ./genomics_general/phyml_sliding_windows.py -T 10 -g ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.ru-sa-tr.geno.gz --prefix ./analysis_ru-sa-tr/output.ru-sa-tr.phyml_bionj.w1000 -w 1000 -M 200 --windType sites --outgroup RS_5 --model GTR --phyml ./phyml/phyml --optimise n
+python ./genomics_general/phyml_sliding_windows.py -T 10 -g ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-ty.geno.gz --prefix ./analysis_er-gu-ty/output.er-gu-ty.phyml_bionj.w1000 -w 1000 -M 200 --windType sites --outgroup RS_5 --model GTR --phyml ./phyml/phyml --optimise n
+python ./genomics_general/phyml_sliding_windows.py -T 10 -g ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-tr-er.geno.gz --prefix ./analysis_sa-tr-er/output.sa-tr-er.phyml_bionj.w1000 -w 1000 -M 200 --windType sites --outgroup RS_5 --model GTR --phyml ./phyml/phyml --optimise n
+python ./genomics_general/phyml_sliding_windows.py -T 10 -g ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-ty-sa.geno.gz --prefix ./analysis_er-ty-sa/output.er-ty-sa.phyml_bionj.w1000 -w 1000 -M 200 --windType sites --outgroup RS_5 --model GTR --phyml ./phyml/phyml --optimise n
+```
+
+#### Perform topology weighting using `TWISST`
+
+```
+python twisst.py -t ./analysis_ru-sa-tr/output.ru-sa-tr.phyml_bionj.w1000.trees.gz -w ./analysis_ru-sa-tr/output.ru-sa-tr.phyml_bionj.w1000.weights.csv.gz --outputTopos ./analysis_ru-sa-tr/output.ru-sa-tr.phyml_bionj.w1000.topo.tree -g ru -g sa -g tr -g sm --method complete --groupsFile sample.ru-sa-tr.group.diploid.tsv
+python twisst.py -t ./analysis_er-gu-ty/output.er-gu-ty.phyml_bionj.w1000.trees.gz -w ./analysis_er-gu-ty/output.er-gu-ty.phyml_bionj.w1000.weights.csv.gz --outputTopos ./analysis_er-gu-ty/output.er-gu-ty.phyml_bionj.w1000.topo.tree -g er -g gu -g ty -g sm --method complete --groupsFile sample.er-gu-ty.group.diploid.tsv
+python twisst.py -t ./analysis_sa-tr-er/output.sa-tr-er.phyml_bionj.w1000.trees.gz -w ./analysis_sa-tr-er/output.sa-tr-er.phyml_bionj.w1000.weights.csv.gz --outputTopos ./analysis_sa-tr-er/output.sa-tr-er.phyml_bionj.w1000.topo.tree -g sa -g tr -g er -g sm --method complete --groupsFile sample.sa-tr-er.group.diploid.tsv
+python twisst.py -t ./analysis_er-ty-sa/output.er-ty-sa.phyml_bionj.w1000.trees.gz -w ./analysis_er-ty-sa/output.er-ty-sa.phyml_bionj.w1000.weights.csv.gz --outputTopos ./analysis_er-ty-sa/output.er-ty-sa.phyml_bionj.w1000.topo.tree -g er -g ty -g sa -g sm --method complete --groupsFile sample.er-ty-sa.group.diploid.tsv
+```
+
+#### Merge data and weight output and sort by chromosome
+
+Chromosome sorting uses `scripts/sort_weights_chrom.py` and `processing_files/Hirundo_rustica_Barn2Flycatcher_ChromAssigned.window.100kb.bed`.
+
+```
+cd analysis_ru-sa-tr
+gunzip output.ru-sa-tr.phyml_bionj.w1000.weights.csv.gz
+paste <(cut -f1,2,3,4,5,6 output.ru-sa-tr.phyml_bionj.w1000.data.tsv) <(tail -n +4 output.ru-sa-tr.phyml_bionj.w1000.weights.csv | cut -f1,2,3) > output.ru-sa-tr.phyml_bionj.w1000.data.weights.tsv
+python ../sort_weights_chrom.py output.ru-sa-tr.phyml_bionj.w1000.data.weights.tsv ../Hirundo_rustica_Barn2Flycatcher_ChromAssigned.window.100kb.bed output.ru-sa-tr.phyml_bionj.w1000.data.weights.chrom.txt
+cd ..
+
+cd analysis_er-gu-ty
+gunzip output.er-gu-ty.phyml_bionj.w1000.weights.csv.gz 
+paste <(cut -f1,2,3,4,5,6 output.er-gu-ty.phyml_bionj.w1000.data.tsv) <(tail -n +4 output.er-gu-ty.phyml_bionj.w1000.weights.csv | cut -f1,2,3) > output.er-gu-ty.phyml_bionj.w1000.data.weights.tsv
+python ../sort_weights_chrom.py output.er-gu-ty.phyml_bionj.w1000.data.weights.tsv ../Hirundo_rustica_Barn2Flycatcher_ChromAssigned.window.100kb.bed output.er-gu-ty.phyml_bionj.w1000.data.weights.chrom.txt
+cd ..
+
+cd analysis_sa-tr-er
+gunzip output.sa-tr-er.phyml_bionj.w1000.weights.csv.gz
+paste <(cut -f1,2,3,4,5,6 output.sa-tr-er.phyml_bionj.w1000.data.tsv) <(tail -n +4 output.sa-tr-er.phyml_bionj.w1000.weights.csv | cut -f1,2,3) > output.sa-tr-er.phyml_bionj.w1000.data.weights.tsv
+python ../sort_weights_chrom.py output.sa-tr-er.phyml_bionj.w1000.data.weights.tsv ../Hirundo_rustica_Barn2Flycatcher_ChromAssigned.window.100kb.bed output.sa-tr-er.phyml_bionj.w1000.data.weights.chrom.txt
+cd ..
+
+cd analysis_er-ty-sa
+gunzip output.er-ty-sa.phyml_bionj.w1000.weights.csv.gz 
+paste <(cut -f1,2,3,4,5,6 output.er-ty-sa.phyml_bionj.w1000.data.tsv) <(tail -n +4 output.er-ty-sa.phyml_bionj.w1000.weights.csv | cut -f1,2,3) > output.er-ty-sa.phyml_bionj.w1000.data.weights.tsv
+python ../sort_weights_chrom.py output.er-ty-sa.phyml_bionj.w1000.data.weights.tsv ../Hirundo_rustica_Barn2Flycatcher_ChromAssigned.window.100kb.bed output.er-ty-sa.phyml_bionj.w1000.data.weights.chrom.txt
+cd ..
+```
+
+Results are in `twisst_results`.
+
+
 
