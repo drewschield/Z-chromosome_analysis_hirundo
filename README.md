@@ -572,10 +572,85 @@ done
 
 ### ADMIXTURE analysis
 
+We'll run ADMIXTURE for a series of *K* genetic clusters on Z-linked and autosomal SNPs.
 
+#### Set up environment
 
+```
+cd ./analysis/
+mkdir admixture
+cd admixture
+mkdir analysis_chrZ
+mkdir anlaysis_auto
+mkdir input
+```
 
+#### Convert SNPs in VCF to .ped format with `plink`
 
+```
+cd input
+plink --vcf ../../../vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.vcf --make-bed --out hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ --allow-extra-chr --recode12
+plink --vcf ../../../vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.vcf --make-bed --out hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto --allow-extra-chr --recode12
+```
 
+#### Fix scaffold names in .map and .bim files so ADMIXTURE doesn't barf
 
+ADMIXTURE wants scaffolds to be represented as integers, and will fail if bootstrapping is used on non-integer .map and .bim input.
 
+```
+sed -i.bak -e 's/QRBI010000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.bim 
+sed -i.bak -e 's/QRBI01000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.bim 
+sed -i.bak -e 's/\.1//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.bim 
+
+sed -i.bak -e 's/QRBI010000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.map 
+sed -i.bak -e 's/QRBI01000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.map
+sed -i.bak -e 's/\.1//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.map
+
+sed -i.bak -e 's/QRBI010000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.bim 
+sed -i.bak -e 's/QRBI01000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.bim 
+sed -i.bak -e 's/\.1//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.bim 
+
+sed -i.bak -e 's/QRBI010000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.map 
+sed -i.bak -e 's/QRBI01000//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.map
+sed -i.bak -e 's/\.1//g' hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.map
+```
+
+#### Run ADMIXTURE
+
+The script below will run ADMIXTURE for a series of *K* values:
+
+run_admixture.sh:
+
+```
+ped=$1
+bootstraps=$2
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do
+	admixture --cv --B$bootstraps $ped $K | tee log${K}.out
+done
+```
+
+Copy script to analysis directories:
+
+```
+cp run_admixture.sh analysis_chrZ
+cp run_admixture.sh analysis_auto
+```
+
+Perform analysis:
+
+```
+cd analysis_auto
+sh run_admixture.sh ../input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.auto.ped 200
+cd ../analysis_chrZ
+sh run_admixture.sh ../input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.ped 200
+cd ..
+```
+
+#### Evaluate CV error
+
+```
+grep -h CV analysis_chrZ/log*.out
+grep -h CV analysis_auto/log*.out
+```
+
+### Topology weighting analysis
