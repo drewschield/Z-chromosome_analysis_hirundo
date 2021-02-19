@@ -20,11 +20,6 @@ The steps below depend on the following software and assume that dependencies ar
 
 Lists and miscellaneous files are in the `processing_files` directory.
 Shell and Python scripts are in the `scripts` directory.
-Population genetic summary statistics output from `pixy` are in the `pixy_results` directory.
-Tajima's *D* statistics are in the `tajimas_d_results` directory.
-Relative population differentiation statistics (*Fst* and *PBS*) are in the `fst_results` and `pbs_results` directories.
-Topology weighting results are in the `twisst_results` directory.
-R scripts used in analyses are in the `R` directory.
 
 Note that you will need to adjust the organization of file locations and paths to suit your environment.
 
