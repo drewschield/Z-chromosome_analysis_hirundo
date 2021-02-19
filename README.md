@@ -14,6 +14,7 @@ The steps below depend on the following software and assume that dependencies ar
 * [Pixy](https://pixy.readthedocs.io/en/latest/)
 * ADMIXTURE
 * [Genomics general scripts](https://github.com/simonhmartin/genomics_general)
+* PhyML
 * TWISST
 * R
 
@@ -654,3 +655,20 @@ grep -h CV analysis_auto/log*.out
 ```
 
 ### Topology weighting analysis
+
+We'll use the topology weighting procedure in `TWISST` to measure support for alternative triplet topologies across the genome.
+
+#### The triplets
+
+Each analysis will use *Hirundo smithii* as an outgroup. There are two 'shallow' and two 'deep' timescale analyses.
+
+Shallow triplets:
+1. *rustica*, *savignii*, and *transitiva*
+2. *erythrogaster*, *gutturalis*, and *tytleri*
+
+Deep triplets:
+1. *savignii*, *transitiva*, and *erythrogaster*
+2. *erythrogaster*, *tytleri*, and *savignii*
+
+Various sample lists and popmaps for topology weighting analyses are in `processing_files/twisst`.
+
