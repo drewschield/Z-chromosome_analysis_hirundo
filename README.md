@@ -20,6 +20,7 @@ The steps below depend on the following software and assume that dependencies ar
 Lists and miscellaneous files are in the `processing_files` directory.
 Shell and Python scripts are in the `scripts` directory.
 Population genetic summary statistics output from `pixy` are in the `pixy_results` directory.
+Tajima's *D* statistics are in the `tajimas_d_results` directory.
 R scripts used in analyses are in the `R` directory.
 
 Note that you will need to adjust the organization of file locations and paths to suit your environment.
@@ -422,15 +423,49 @@ done
 
 The concatenated results of this script are in `pixy_results`.
 
-### Tajima's D analysis
+### Tajima's *D* analysis
 
+We'll use `vcftools` to estimate Tajima's *D* in sliding windows across the autosomes and Z chromosome.
 
+#### Set up environment
 
+```
+cd ./analysis/
+mkdir popgen_stats
+cd popgen_stats
+mkdir tajimaD
+cd tajimaD
+```
 
+#### Make directory with sample lists for analysis
 
+`mkdir sample_lists`
 
+The directory contains lists of individuals per subspecies and hybrid zone (this subdirectory is in `processing_files`)
 
+#### Estimate Tajima's *D* in sliding windows
 
+The script below will calculate *D* in windows of a specified size. Give it a window-size abbreviation and missing data descriptor too.
+
+window_tajimaD.sh:
+
+```
+vcf=$1
+window=$2
+abbrev=$3
+miss=$4
+for list in ./sample_lists/*.list; do
+	name=`echo $list | cut -d'.' -f3`
+	echo $name
+	vcftools --gzvcf $vcf --keep $list --TajimaD $window --out $name.$miss.$abbrev
+done
+```
+
+```
+sh window_tajimaD.sh ../../../vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.vcf.gz 100000 100kb miss04
+```
+
+Results are in `tajima_d_results`.
 
 
 
