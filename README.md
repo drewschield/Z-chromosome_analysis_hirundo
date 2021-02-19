@@ -504,6 +504,9 @@ done
 
 Results are `fst_results`.
 
+#### Calculate *PBS* from *Fst* results
+
+We'll calculate *PBS* in sliding windows in the `R` script `Fst_PBS.R` (see [Analysis in R](#analysis-in-r) section below).
 
 
 
