@@ -338,6 +338,41 @@ vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.
 
 ### Pixy analysis
 
+We'll use [pixy](https://pixy.readthedocs.io/en/latest/) to estimate nucleotide diversity (pi) for barn swallow populations.
+
+I installed `pixy` in it's own `conda` environment with Python v3.6.
+
+#### Set up environment
+
+```
+mkdir pixy
+cd pixy
+mkdir pixy_results
+mkdir pixy_zarr
+```
+
+#### Subset all-sites VCF by scaffold
+
+Pixy will run on each scaffold independently.
+
+`mkdir vcf_all-sites_chrom`
+
+The script below will parse an input VCf into component scaffold-specific VCFs in `processing_files/Hirundo_rustica_Barn2Flycatcher_ChromAssigned.list`.
+
+parse_chrom_all-sites_VCF.sh:
+
+```
+for scaff in `cat Hirundo_rustica_Barn2Flycatcher_ChromAssigned.list`; do
+	echo parsing $scaff VCF
+	bcftools view --threads 8 -r $scaff -O z -o ./vcf_all-sites_chrom/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.$scaff.vcf.gz hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.vcf.gz
+	tabix -p vcf ./vcf_all-sites_chrom/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.$scaff.vcf.gz
+	echo indexed $scaff VCF
+done
+```
+
+`sh parse_chrom_all-sites_VCF.sh`
+
+
 
 
 
