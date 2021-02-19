@@ -338,7 +338,7 @@ Thin SNPs with MAF >= 0.05 by 100 bp (and only keep ingroup samples based on `pr
 vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.vcf.gz --recode --stdout --keep ./processing_files/sample.ingroup.list --min-alleles 2 --max-alleles 2 --maf 0.05 --thin 100  | bgzip -c > hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.vcf.gz
 ```
 
-Bonus: extract autosomal and Z-linked SNPs:
+Bonus: extract autosomal and Z-linked SNPs using `bcftools` based on `processing_files/Hirundo_rustica_Barn2Flycatcher_AutoAssigned.bed` and `processing_files/Hirundo_rustica_Barn2Flycatcher_ZAssigned.bed`:
 
 ```
 bcftools view -R Hirundo_rustica_Barn2Flycatcher_ZAssigned.bed -O v -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.chrZ.vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.vcf.gz
