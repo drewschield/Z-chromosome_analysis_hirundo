@@ -767,5 +767,48 @@ cd ..
 
 Results are in `twisst_results`.
 
+### ABBA-BABA analysis
 
+We'll calculate the frequency of ABBA and BABA patterns in sliding windows between parental and admixed populations in Asia.
 
+Sample list files are in `processing_files/abba-baba/`.
+
+#### Set up environment
+
+```
+cd ./analysis
+mkdir abba-baba
+cd abba-baba
+mkdir geno_input
+```
+
+#### Extract VCF tables for analyses
+
+```
+bcftools view --threads 16 -S sample.sa-ru-rt-sm.list -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rt-sm.vcf.gz /data3/hirundo/vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rt-sm.vcf.gz
+
+bcftools view --threads 16 -S sample.sa-ru-rg-sm.list -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rg-sm.vcf.gz /data3/hirundo/vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rg-sm.vcf.gz
+
+bcftools view --threads 16 -S sample.er-gu-tg-sm.list -O z -o hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-tg-sm.vcf.gz /data3/hirundo/vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.vcf.gz
+tabix -p vcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-tg-sm.vcf.gz
+```
+
+#### Convert VCFs to geno input
+
+```
+python ./genomics_general/VCF_processing/parseVCF.py -i hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rt-sm.vcf.gz | bgzip > ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rt-sm.geno.gz
+python ./genomics_general/VCF_processing/parseVCF.py -i hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rg-sm.vcf.gz | bgzip > ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rg-sm.geno.gz
+python ./genomics_general/VCF_processing/parseVCF.py -i hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-tg-sm.vcf.gz | bgzip > ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-tg-sm.geno.gz
+```
+
+#### Perform ABBA-BABA tests in sliding windows:
+
+```
+python ./genomics_general/ABBABABAwindows.py -g ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rt-sm.geno.gz -f phased -o abbababa.output.sa-rt-ru-sm.w2000.csv -w 2000 -m 50 -s 2000 --minData 0.5 -P1 sa -P2 rt -P3 ru -O sm -T 10 --popsFile sample.sa-ru-rt-sm.popmap
+python ./genomics_general/ABBABABAwindows.py -g ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.sa-ru-rg-sm.geno.gz -f phased -o abbababa.output.sa-rg-ru-sm.w2000.csv -w 2000 -m 50 -s 2000 --minData 0.5 -P1 sa -P2 rg -P3 ru -O sm -T 10 --popsFile sample.sa-ru-rg-sm.popmap
+python ./genomics_general/ABBABABAwindows.py -g ./geno_input/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.mac2.er-gu-tg-sm.geno.gz -f phased -o abbababa.output.er-tg-gu-sm.w2000.csv -w 2000 -m 50 -s 2000 --minData 0.5 -P1 er -P2 tg -P3 gu -O sm -T 10 --popsFile sample.er-gu-tg-sm.popmap
+```
+
+Results are in `abba-baba_results`.
