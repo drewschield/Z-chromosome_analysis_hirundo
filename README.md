@@ -21,6 +21,7 @@ Lists and miscellaneous files are in the `processing_files` directory.
 Shell and Python scripts are in the `scripts` directory.
 Population genetic summary statistics output from `pixy` are in the `pixy_results` directory.
 Tajima's *D* statistics are in the `tajimas_d_results` directory.
+Relative population differentiation statistics (*Fst* and *PBS*) are in the `fst_results` and `pbs_results` directories.
 R scripts used in analyses are in the `R` directory.
 
 Note that you will need to adjust the organization of file locations and paths to suit your environment.
@@ -467,16 +468,41 @@ sh window_tajimaD.sh ../../../vcf/hirundo_rustica+smithii.allsites.HardFilter.re
 
 Results are in `tajima_d_results`.
 
+### *Fst* and *PBS* analysis
 
+We'll estimate relative population differentiation (*Fst*) using `vcftools`.
 
+#### Set up environment
 
+```
+cd ./analysis/popgen_stats
+mkdir fst
+```
 
+#### Estimate *Fst* in sliding windows
 
+The script below will calculate *Fst* between pairs of populations in `processing_files/pairwise_fst.list`.
+Feed it a window size and abbreviation too.
 
+window_fst.sh:
 
+```
+list=$1
+window=$2
+abbrev=$3
+for pair in `cat $list`; do
+	pair1=`echo $pair | cut -d',' -f1`
+	pair2=`echo $pair | cut -d',' -f2`
+	name1=`echo $pair1 | cut -d'.' -f2`
+	name2=`echo $pair2 | cut -d'.' -f2`
+	echo calculating windowed Fst between $name1 and $name2
+	vcftools --gzvcf ../../../vcf/hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.vcf.gz --weir-fst-pop ../../sample_lists/$pair1 --weir-fst-pop ../../sample_lists/$pair2 --fst-window-size $window --fst-window-step $window --out ./${name1}_${name2}.$abbrev
+done
+```
 
+`sh window_fst.sh ./processing_files/pairwise_fst.list 100000 100kb`
 
-
+Results are `fst_results`.
 
 
 
