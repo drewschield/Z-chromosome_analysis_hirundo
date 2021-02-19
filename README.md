@@ -336,7 +336,7 @@ Thin SNPs with MAF >= 0.05 by 100 bp (and only keep ingroup samples based on `pr
 vcftools --gzvcf hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.vcf.gz --recode --stdout --keep ./processing_files/sample.ingroup.list --min-alleles 2 --max-alleles 2 --maf 0.05 --thin 100  | bgzip -c > hirundo_rustica+smithii.allsites.HardFilter.recode.depth.chrom.final.snps.miss04.maf05.thin100bp.ingroup.vcf.gz
 ```
 
-
+### Pixy analysis
 
 
 
