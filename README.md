@@ -395,9 +395,32 @@ for chrom in `cat $list`; do
 done
 ```
 
+`sh pixyloop.sh ./processing_files/Hirundo_rustica_Barn2Flycatcher_ChromAssigned.list`
 
+#### Concatenate results
 
+First, make ordered list of populations in output:
 
+`tail -n +2  ./pixy_results/pixy_100kb_QRBI01000187.1_pi.txt | awk '{print $1}' | uniq > parselist.pi`
+
+The script below will concatenate pixy results.
+
+concatenate_pixy_pi.sh:
+
+```
+parselist=$1
+chromlist=$2
+echo "pop\tchromosome\twindow_pos_1\twindow_pos_2\tavg_pi\tno_sites\tcount_diffs\tcount_comparisons\tcount_missing" > pixy_100kb_all_pi.txt
+for pop in `cat $parselist`; do
+	for chrom in `cat $chromlist`; do
+		grep -w $pop ./pixy_results/pixy_100kb_${chrom}_pi.txt >> pixy_100kb_all_pi.txt
+	done
+done
+```
+
+`sh concatenate_pixy_pi.sh ./processing_files/parselist.pi Hirundo_rustica_Barn2Flycatcher_ChromAssigned.list`
+
+The concatenated results of this script are in `pixy_results`.
 
 
 
