@@ -807,3 +807,34 @@ python ./genomics_general/ABBABABAwindows.py -g ./geno_input/hirundo_rustica+smi
 ```
 
 Results are in `abba-baba_results`.
+
+### Analysis in R
+
+After using various scripts and software packages to analyze genomic variation, we'll use a handful of R scripts to perform downstream statistical analyses and for basic plotting of results.
+
+* __pi.R__ - analysis of nucleotide diversity estimated using `pixy`
+* __tajimaD.R__ - analysis of Tajima's D statistics estimated using `vcftools`.
+* __FST_PBS.R__ - analysis of relative population differentiation statistics.
+* __topology_weighting.R__ - analysis of topology weights estimated using `TWISST`.
+* __abba-baba.R__ - analysis of introgression statistics.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
