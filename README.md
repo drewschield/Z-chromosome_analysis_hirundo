@@ -1,5 +1,7 @@
 # Analysis of Z-linked genomic variation in barn swallows
 
+![Barn swallow Z-linked diversity](/cover-image.png "cover image")
+
 Below are details about the data processing and analysis steps in our analysis of genetic diversity and differentiation across the genomes of barn swallow populations, focusing on comparisons between the Z chromosome and autosomes to understand the mechanisms governing sex-linked variation and the role of the Z chromosome in speciation. This workflow is a companion to the description in [Schield et al. _Molecular Ecology_ 30:2313-2332](https://onlinelibrary.wiley.com/doi/full/10.1111/mec.15885).
 
 The steps below depend on the following software and assume that dependencies are on the user path:
